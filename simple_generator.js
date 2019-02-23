@@ -1,94 +1,175 @@
 
 
+function draw_line(angle, offset, length) {
+    var canvas = document.getElementById("canvas");
+    
+    let end_x = length * Math.cos(angle) + offset.x
+    let end_y = length * Math.sin(angle) + offset.y
 
-let stator_radius = 200
-
-
-// inner = h, !inner = e
-let circles = [
-    { radius: 50, inner: true},
-    { radius: 20, inner: false}
-]
-
-let pen_radius = 38 // last circle radius 
-
-
-// not important
-let pen_width = 10
-
-
+    let start = convert_x_y_to_canvas(offset.x, offset.y, canvas)
+    let end = convert_x_y_to_canvas(end_x, end_y, canvas)
+    
+    var ctx = canvas.getContext("2d");
+    ctx.beginPath();
+    ctx.moveTo(start.right, start.down);
+    ctx.lineTo(end.right, end.down);
+    ctx.stroke();
+}
 
 
-let main_rotor_degree_increment = 1
+function clear_canvas() {
+	var canvas = document.getElementById("canvas");
+    const context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+}
 
-// center of circle, angle of canonical line from center in radians
-let circle_states = [
-    { center: [200 - 50, 0], angle: 0},
-    { center: [200 + 10, 0], angle: 0}
-]
+
 
 function convert_x_y_to_canvas(x, y, canvas) {
 	var right = (canvas.width / 2) + x
 	var down = (canvas.height / 2) - y
-	console.log(y, down)
 	return {right: right, down: down}
 }
 
-
-function draw_point(x, y) {	
+function draw_point(x, y, color="#ff2626") {	
 	var canvas = document.getElementById("canvas");
 	var coords = convert_x_y_to_canvas(x, y, canvas)
 	var pointSize = 1
   	var ctx = canvas.getContext("2d");
-  	ctx.fillStyle = "#ff2626"; // Red color
+  	ctx.fillStyle = color
 	ctx.beginPath();
     ctx.arc(coords.right, coords.down, pointSize, 0, Math.PI * 2, true);
     ctx.fill();
 }
 
-
-big_radius = 200
-small_radius = 100
-pen_radius = 120
-
+function draw_circle(x, y, radius, color="#ff2626") {	
+    var canvas = document.getElementById("canvas");
+    var coords = convert_x_y_to_canvas(x, y, canvas)
+    var ctx = canvas.getContext("2d");
+    ctx.beginPath();
+    ctx.arc(coords.right, coords.down, radius, 0, 2 * Math.PI);
+    ctx.stroke();
+}
 
 function get_pen_coords(t_big) {
 	// contained circle angle radians
-	t_small = -(big_radius - small_radius) * t_big / small_radius
+	const t_small = -(big_radius - small_radius) * t_big / small_radius
 	
-	x_small_c = (big_radius - small_radius) * Math.cos(t_big)
-	y_small_c = (big_radius - small_radius) * Math.sin(t_big)
+	const x_small_c = (big_radius - small_radius) * Math.cos(t_big)
+	const y_small_c = (big_radius - small_radius) * Math.sin(t_big)
+	
+    const x_pen_offset = pen_radius * Math.cos(t_small) 
+	const y_pen_offset = pen_radius * Math.sin(t_small) 
 
-	x_pen_offset = pen_radius * Math.cos(t_small) 
-	y_pen_offset = pen_radius * Math.sin(t_small) 
-
-	x_pen = x_small_c + x_pen_offset
-	y_pen = y_small_c + y_pen_offset
-
-	console.log(x_pen, y_pen)
+	const x_pen = x_small_c + x_pen_offset
+	const y_pen = y_small_c + y_pen_offset
 
 	return {x: x_pen, y: y_pen}
 }
 
+function get_small_offset_angle(big_radius, small_radius, t_big, offset_big) {
+    const t_small = -(big_radius - small_radius) * t_big / small_radius
+	const x_small_offset = (big_radius - small_radius) * Math.cos(t_big)
+	const y_small_offset = (big_radius - small_radius) * Math.sin(t_big)
+	return {
+        x: offset_big.x + x_small_offset,
+        y: offset_big.y + y_small_offset,
+        angle: t_small
+    }
+}
 
-// run
+function get_pen_from_last_circle(circle_offset, circle_angle, pen_radius) {
+	const x_pen_offset = pen_radius * Math.cos(circle_angle) 
+	const y_pen_offset = pen_radius * Math.sin(circle_angle) 
+    return {
+        x: circle_offset.x + x_pen_offset,
+        y: circle_offset.y + y_pen_offset
+    }
+}
+
+
+// run ////////////////////////////////////
+
+
+const stator_radius = 140
+
+// inner = h, !inner = e
+const circles = [
+    { radius: stator_radius },
+    { radius: 70 },
+    { radius: 35 },
+    { radius: 17.5 }
+]
+
+const pen_radius = 50
+
+
 var theta_increment = Math.PI / 180
 
 // big circle angle radians
-var t_big = 0 
+var t_biggest = 0 
 
-var pen = {
-	x: big_radius - small_radius + pen_radius,
-	y: 0
-}
 
-while (t_big < Math.PI * 4) {
-	draw_point(pen.x, pen.y)
-	t_big += theta_increment
-	pen = get_pen_coords(t_big)
-	//setTimeout	
-		
+/*
+while (t_biggest < Math.PI * 4) {
+
+    let t_big = t_biggest
+    let big_offset = {x: 0, y: 0}
+    for (var i = 0; i < circles.length - 1; i++) {
+        big = circles[i]
+        small = circles[i+1]
+        
+        let small_offset_angle = get_small_offset_angle(big.radius, small.radius, t_big, big_offset)
+    //    console.log(small_offset_angle)
+        t_big = small_offset_angle.angle
+        big_offset = {x: small_offset_angle.x, y: small_offset_angle.y}
+        
+        draw_point(big_offset.x, big_offset.y)
+
+        console.log(i, t_big)
+    } 
+
+    let pen = get_pen_from_last_circle(big_offset, t_big, pen_radius)
+    draw_point(pen.x, pen.y, "#ff26ff")
+	t_biggest += theta_increment
 }
+*/
+
+var interval = setInterval(function () {
+    let t_big = t_biggest
+    let big_offset = {x: 0, y: 0}
+    
+    draw_circle(big_offset.x, big_offset.y, circles[0].radius)
+
+    for (var i = 0; i < circles.length - 1; i++) {
+        big = circles[i]
+        small = circles[i+1]
+        
+        let small_offset_angle = get_small_offset_angle(big.radius, small.radius, t_big, big_offset)
+        
+        t_big = small_offset_angle.angle //- t_big // not sure about this
+        big_offset = {
+            x: small_offset_angle.x,
+            y: small_offset_angle.y
+        }
+       
+        draw_circle(big_offset.x, big_offset.y, small.radius)
+        draw_line(t_big, big_offset, small.radius)
+        //draw_point(big_offset.x, big_offset.y)
+    
+    } 
+
+    let pen = get_pen_from_last_circle(big_offset, t_big, pen_radius)
+    //draw_point(pen.x, pen.y, "#ff26ff")
+	t_biggest += theta_increment
+
+    setTimeout(clear_canvas, 25)
+    // stop drawing
+    if (t_biggest > Math.PI * 8) {
+        clearInterval(interval)
+    }
+}, 30);
+
 
 
 
