@@ -204,10 +204,8 @@ var interval = setInterval(function () {
 var rotations = get_rotations(circles)
 var abs_t_rotations = get_abs_t_rotations(rotations)
 
-  window.requestAnimationFrame(step);
 
-
-var interval = setInterval(function () {
+function step() {
     
     let offset = {x: 0, y: 0}
     draw_circle(offset.x, offset.y, circles[0].radius)
@@ -231,13 +229,12 @@ var interval = setInterval(function () {
     //draw_point(pen.x, pen.y, "#ff26ff")
 	t_biggest += theta_increment
 
-    setTimeout(clear_canvas, 20)
+    setTimeout(clear_canvas, 10)
     // stop drawing
-    if (t_biggest > Math.PI * 2) {
-        clearInterval(interval)
+    if (t_biggest < Math.PI * 8) {
+        window.requestAnimationFrame(step);
     }
-}, 30);
-
+}
 
 
 window.requestAnimationFrame(step);
