@@ -204,8 +204,8 @@ var interval = setInterval(function () {
 var rotations = get_rotations(circles)
 var abs_t_rotations = get_abs_t_rotations(rotations)
 
-console.log(rotations)
-console.log(abs_t_rotations)
+  window.requestAnimationFrame(step);
+
 
 var interval = setInterval(function () {
     
@@ -216,12 +216,15 @@ var interval = setInterval(function () {
         var parent_radius = circles[i-1].radius 
         var radius = circles[i].radius 
        
-         
         var angle_around = abs_t_rotations[i] * t_biggest 
         var center_radius = parent_radius - radius 
         var center = get_point(center_radius, angle_around, offset)
 
         draw_circle(center.x, center.y, radius)
+        
+        var angle_rotated = 2 * Math.PI - rotations[i] * t_biggest 
+        draw_line(angle_rotated, center, radius)
+        
         offset = center
     } 
 
@@ -237,3 +240,4 @@ var interval = setInterval(function () {
 
 
 
+window.requestAnimationFrame(step);
