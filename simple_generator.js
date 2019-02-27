@@ -1,7 +1,7 @@
 
 
-function draw_line(angle, offset, length) {
-    var canvas = document.getElementById("canvas");
+function draw_line(angle, offset, length, canvas_id) {
+    var canvas = document.getElementById(canvas_id);
     
     let end_x = length * Math.cos(angle) + offset.x
     let end_y = length * Math.sin(angle) + offset.y
@@ -17,12 +17,11 @@ function draw_line(angle, offset, length) {
 }
 
 
-function clear_canvas() {
-	var canvas = document.getElementById("canvas");
+function clear_canvas(canvas_id) {
+	var canvas = document.getElementById(canvas_id);
     const context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
 }
-
 
 
 function convert_x_y_to_canvas(x, y, canvas) {
@@ -31,8 +30,8 @@ function convert_x_y_to_canvas(x, y, canvas) {
 	return {right: right, down: down}
 }
 
-function draw_point(x, y, color="#ff2626") {	
-	var canvas = document.getElementById("canvas");
+function draw_point(x, y, color, canvas_id) {	
+	var canvas = document.getElementById(canvas_id);
 	var coords = convert_x_y_to_canvas(x, y, canvas)
 	var pointSize = 1
   	var ctx = canvas.getContext("2d");
@@ -42,8 +41,8 @@ function draw_point(x, y, color="#ff2626") {
     ctx.fill();
 }
 
-function draw_circle(x, y, radius, color="#ff2626") {	
-    var canvas = document.getElementById("canvas");
+function draw_circle(x, y, radius, color, canvas_id) {	
+    var canvas = document.getElementById(canvas_id);
     var coords = convert_x_y_to_canvas(x, y, canvas)
     var ctx = canvas.getContext("2d");
     ctx.beginPath();
@@ -121,17 +120,17 @@ function get_rotations(circles) {
 // run ////////////////////////////////////
 
 
-const stator_radius = 180
+const stator_radius = 200
 
 // inner = h, !inner = e
 const circles = [
     { radius: stator_radius },
-    { radius: 90 },
-    { radius: 30 },
-    { radius: 15 }
+    { radius: 50 },
+    { radius: 100 },
+    { radius: 10 }
 ]
 
-const pen_radius = 50
+const pen_radius = 10
 
 
 var theta_increment = Math.PI / 180
@@ -139,76 +138,17 @@ var theta_increment = Math.PI / 180
 // big circle angle radians
 var t_biggest = 0 
 
-
-/*
-while (t_biggest < Math.PI * 4) {
-
-    let t_big = t_biggest
-    let big_offset = {x: 0, y: 0}
-    for (var i = 0; i < circles.length - 1; i++) {
-        big = circles[i]
-        small = circles[i+1]
-        
-        let small_offset_angle = get_small_offset_angle(big.radius, small.radius, t_big, big_offset)
-    //    console.log(small_offset_angle)
-        t_big = small_offset_angle.angle
-        big_offset = {x: small_offset_angle.x, y: small_offset_angle.y}
-        
-        draw_point(big_offset.x, big_offset.y)
-
-        console.log(i, t_big)
-    } 
-
-    let pen = get_pen_from_last_circle(big_offset, t_big, pen_radius)
-    draw_point(pen.x, pen.y, "#ff26ff")
-	t_biggest += theta_increment
-}
-
-var interval = setInterval(function () {
-    let t_big = t_biggest
-    let big_offset = {x: 0, y: 0}
-    
-    draw_circle(big_offset.x, big_offset.y, circles[0].radius)
-
-    for (var i = 0; i < circles.length - 1; i++) {
-        big = circles[i]
-        small = circles[i+1]
-        
-        let small_offset_angle = get_small_offset_angle(big.radius, small.radius, t_big, big_offset)
-        
-        t_big = small_offset_angle.angle - t_big // not sure about this
-        big_offset = {
-            x: small_offset_angle.x,
-            y: small_offset_angle.y
-        }
-       
-        draw_circle(big_offset.x, big_offset.y, small.radius)
-        draw_line(t_big, big_offset, small.radius)
-        //draw_point(big_offset.x, big_offset.y)
-    
-    } 
-
-    let pen = get_pen_from_last_circle(big_offset, t_big, pen_radius)
-    //draw_point(pen.x, pen.y, "#ff26ff")
-	t_biggest += theta_increment
-
-    setTimeout(clear_canvas, 25)
-    // stop drawing
-    if (t_biggest > Math.PI * 8) {
-        clearInterval(interval)
-    }
-}, 30);
-*/
-
-
 var rotations = get_rotations(circles)
 var abs_t_rotations = get_abs_t_rotations(rotations)
 
 
+// TODO change to be time based
 function step() {
     
     let offset = {x: 0, y: 0}
-    draw_circle(offset.x, offset.y, circles[0].radius)
+
+    // draw stator
+    draw_circle(offset.x, offset.y, circles[0].radius, "#ff26ff", "canvas-refreshing")
 
     for (var i = 1; i < circles.length; i++) {
         var parent_radius = circles[i-1].radius 
@@ -218,18 +158,25 @@ function step() {
         var center_radius = parent_radius - radius 
         var center = get_point(center_radius, angle_around, offset)
 
-        draw_circle(center.x, center.y, radius)
+        draw_circle(center.x, center.y, radius, "#ff26ff", "canvas-refreshing")
         
         var angle_rotated = 2 * Math.PI - rotations[i] * t_biggest 
-        draw_line(angle_rotated, center, radius)
+        draw_line(angle_rotated, center, radius, "canvas-refreshing")
         
         offset = center
     } 
+        
+      
+    // draw spirograph point and pen line
+    var angle_rotated = 2 * Math.PI - rotations[i-1] * t_biggest 
+    var spiro = get_point(pen_radius, angle_rotated, offset)
+    draw_line(angle_rotated, offset, pen_radius, "canvas-refreshing")
+    draw_point(spiro.x, spiro.y, "#ff2626", "canvas-static")
 
     //draw_point(pen.x, pen.y, "#ff26ff")
 	t_biggest += theta_increment
 
-    setTimeout(clear_canvas, 10)
+    setTimeout(function () { clear_canvas("canvas-refreshing") } , 10)
     // stop drawing
     if (t_biggest < Math.PI * 8) {
         window.requestAnimationFrame(step);
