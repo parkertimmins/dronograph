@@ -96,12 +96,12 @@ function get_pen_from_last_circle(circle_offset, circle_angle, pen_radius) {
 
 
 // num loop inside parent in single first child loop
-function get_abs_t_rotations(rotations) {
-    var abs_t_rotations = [0, 1]
+function get_revolutions(rotations) {
+    var revolutions = [0, 1]
     for (var c = 2; c < rotations.length; c++) {
-        abs_t_rotations[c] = (rotations[c-1] - rotations[c-2]) + abs_t_rotations[c-1]
+        revolutions[c] = (rotations[c-1] - rotations[c-2]) + revolutions[c-1]
     }
-    return abs_t_rotations
+    return revolutions
 }
 
 // num 2pi rotations of circle in single first child loop
@@ -112,24 +112,59 @@ function get_rotations(circles) {
         const child = circles[c]    
         const R = parent.radius
         const r = child.radius
-        rotations[c] = (R - r)/r + rotations[c-1]
+        const rotation_increase = child.inner ? (R - r)/r : (R + r)/r
+        rotations[c] = rotation_increase + rotations[c-1]
     }
     return rotations
 }
 
+const CW = -1 // clockwise
+const CCW = 1 // counter clockwise
+const same = x => x
+const opposite = x => -x
+function get_rotate_directions(circles) {
+    const directions = [null]; 
+    directions[1] = circles[1].inner ? CW : CCW
+    for (var c = 2; c < circles.length; c++) {
+        directions[c] = circles[c].inner ? same(directions[c-1]) : opposite(directions[c-1])
+    }
+    return directions 
+}
+
+function get_revolve_directions(circles, rotate_directions) {
+    const directions = [null]; 
+    for (var c = 1; c < circles.length; c++) {
+        directions[c] = circles[c].inner ? opposite(rotate_directions[c]) : same(rotate_directions[c])
+    }
+    return directions 
+}
+
+
+
 // run ////////////////////////////////////
 
 
+
+
 ////// global values for step function /////
-const pen_radius = 10
+const pen_radius = 25
 const theta_increment = Math.PI / 180
 
-let circles = []
+let circles = [
+    { radius: 200 },
+    { radius: 100, inner: false },
+    { radius: 50, inner: true },
+    { radius: 25, inner: false },
+]
 // big circle angle radians
 let t_biggest = 0 
 let rotations = get_rotations(circles)
-let abs_t_rotations = get_abs_t_rotations(rotations)
+let revolutions = get_revolutions(rotations)
+let rotate_directions = get_rotate_directions(circles)
+let revolve_directions = get_revolve_directions(circles, rotate_directions)
 
+console.log(rotate_directions)
+console.log(revolve_directions)
 
 // TODO change to be time based
 function step() {
@@ -143,13 +178,14 @@ function step() {
         var parent_radius = circles[i-1].radius 
         var radius = circles[i].radius 
        
-        var angle_around = abs_t_rotations[i] * t_biggest 
-        var center_radius = parent_radius - radius 
+        var angle_around = revolve_directions[i] * revolutions[i] * t_biggest 
+        var center_radius = circles[i].inner ? parent_radius - radius : parent_radius + radius
+
         var center = get_point(center_radius, angle_around, offset)
 
         draw_circle(center.x, center.y, radius, "#ff26ff", "canvas-refreshing")
         
-        var angle_rotated = 2 * Math.PI - rotations[i] * t_biggest 
+        var angle_rotated = rotate_directions[i] * rotations[i] * t_biggest 
         draw_line(angle_rotated, center, radius, "canvas-refreshing")
         
         offset = center
@@ -181,12 +217,13 @@ function startAnimation() {
     let radii = document.getElementById("radius-input").value.split(",");
     
     if (radii.length < 2) {
+        alert("Must input at least 2 comma separated radii");
         return;
     }
     t_biggest = 0; // reset
-    circles = radii.map(radius => ({radius}));
+    //circles = radii.map(radius => ({radius}));
     rotations = get_rotations(circles)
-    abs_t_rotations = get_abs_t_rotations(rotations)
+    revolutions = get_revolutions(rotations)
 
     window.requestAnimationFrame(step);
 }
