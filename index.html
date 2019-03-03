@@ -6,13 +6,21 @@
           
     </head>
     <body>
+
+        <div id="spiro-control">
+            <textarea id="radius-input" cols="6" rows="20">
+200h
+100e
+50h
+25e</textarea>
+            <button id="start-animation">Start</button>
+        </div>
+
         <div id="canvas-wrapper">
             <canvas id="canvas-static" height="800" width="800"></canvas>
             <canvas id="canvas-refreshing" height="800" width="800"></canvas>
         </div>
         
-        <input id="radius-input" value="200,100,50,25"/>
-        <button id="start-animation">Start</button>
 
 
         <script src="simple_generator.js"></script>

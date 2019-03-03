@@ -1,21 +1,37 @@
-
+body {
+    background: #607d8b;
+}
 
 #canvas-wrapper {
     position: relative;
     width: 800px;
     height: 800px;
+    display: inline-block;
+    border-radius: 10px;
+    background: white;
+    
+    border: 5px solid darkgrey;
 }
 
 #canvas-static {
     position: absolute;
-    border: 1px solid black;
+    border-radius: 10px;
 }
 
 #canvas-refreshing {
     position: absolute;
-    border: 1px solid black;
+    border-radius: 10px;
 }
 
 #radius-input {
     margin-top: 10px;
+}
+
+#spiro-control {
+    width: 200px;
+    display: inline-block;
+
+    vertical-align: top; /* not sure why necessary */
+
+
 }

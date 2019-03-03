@@ -1,4 +1,14 @@
 
+function split_circle_line(radius_type) {
+    var match = /^(\d+)(h|e)$/.exec(radius_type);
+    if (match) {
+        const [full_match, radius, type] = match;
+        return { radius: parseInt(radius), inner: type == 'h' }
+    } else {
+        return null;
+    }
+}
+
 
 function draw_line(angle, offset, length, canvas_id) {
     var canvas = document.getElementById(canvas_id);
@@ -141,6 +151,8 @@ function get_revolve_directions(circles, rotate_directions) {
 
 
 
+
+
 // run ////////////////////////////////////
 
 
@@ -150,25 +162,20 @@ function get_revolve_directions(circles, rotate_directions) {
 const pen_radius = 25
 const theta_increment = Math.PI / 180
 
-let circles = [
-    { radius: 200 },
-    { radius: 100, inner: false },
-    { radius: 50, inner: true },
-    { radius: 25, inner: false },
-]
+
+let circles = []
+let rotations = []
+let revolutions = []
+let rotate_directions = [] 
+let revolve_directions = [] 
+
+
 // big circle angle radians
 let t_biggest = 0 
-let rotations = get_rotations(circles)
-let revolutions = get_revolutions(rotations)
-let rotate_directions = get_rotate_directions(circles)
-let revolve_directions = get_revolve_directions(circles, rotate_directions)
-
-console.log(rotate_directions)
-console.log(revolve_directions)
 
 // TODO change to be time based
 function step() {
-    
+   
     let offset = {x: 0, y: 0}
 
     // draw stator
@@ -193,7 +200,7 @@ function step() {
         
       
     // draw spirograph point and pen line
-    var angle_rotated = 2 * Math.PI - rotations[i-1] * t_biggest 
+    var angle_rotated = rotate_directions[i-1] * rotations[i-1] * t_biggest 
     var spiro = get_point(pen_radius, angle_rotated, offset)
     draw_line(angle_rotated, offset, pen_radius, "canvas-refreshing")
     draw_point(spiro.x, spiro.y, "#ff2626", "canvas-static")
@@ -214,19 +221,26 @@ function startAnimation() {
     clear_canvas("canvas-refreshing")
     clear_canvas("canvas-static")
 
-    let radii = document.getElementById("radius-input").value.split(",");
-    
-    if (radii.length < 2) {
-        alert("Must input at least 2 comma separated radii");
+    let lines = document.getElementById("radius-input").value.split("\n").filter(line => line.length > 0)
+    circles = lines.map(split_circle_line);
+    console.log(circles)
+   
+    if (circles.length < 2) {
+        //alert("Must input at least 2 comma separated radii");
         return;
     }
     t_biggest = 0; // reset
-    //circles = radii.map(radius => ({radius}));
+
     rotations = get_rotations(circles)
     revolutions = get_revolutions(rotations)
+    rotate_directions = get_rotate_directions(circles)
+    revolve_directions = get_revolve_directions(circles, rotate_directions)
 
     window.requestAnimationFrame(step);
 }
+
+
+
 
 
 // on load code  ////////////////////////////////////////////////
