@@ -2,10 +2,19 @@
 <html>
     <head>
         <title>Page Title</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+          
     </head>
     <body>
-        <canvas id="canvas-static" width="800" height="800" style="border: 1px black solid; position:absolute; top:5px; left:5px"></canvas>
-        <canvas id="canvas-refreshing" width="800" height="800" style="border: 1px black solid; position:absolute; top:5px; left:5px"></canvas>
+        <div id="canvas-wrapper">
+            <canvas id="canvas-static" height="800" width="800"></canvas>
+            <canvas id="canvas-refreshing" height="800" width="800"></canvas>
+        </div>
+        
+        <input id="radius-input" value="200,100,50,25"/>
+        <button id="start-animation">Start</button>
+
+
         <script src="simple_generator.js"></script>
     </body>
 </html>

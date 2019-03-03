@@ -120,26 +120,15 @@ function get_rotations(circles) {
 // run ////////////////////////////////////
 
 
-const stator_radius = 200
-
-// inner = h, !inner = e
-const circles = [
-    { radius: stator_radius },
-    { radius: 50 },
-    { radius: 100 },
-    { radius: 10 }
-]
-
+////// global values for step function /////
 const pen_radius = 10
+const theta_increment = Math.PI / 180
 
-
-var theta_increment = Math.PI / 180
-
+let circles = []
 // big circle angle radians
-var t_biggest = 0 
-
-var rotations = get_rotations(circles)
-var abs_t_rotations = get_abs_t_rotations(rotations)
+let t_biggest = 0 
+let rotations = get_rotations(circles)
+let abs_t_rotations = get_abs_t_rotations(rotations)
 
 
 // TODO change to be time based
@@ -184,4 +173,27 @@ function step() {
 }
 
 
-window.requestAnimationFrame(step);
+
+function startAnimation() {
+    clear_canvas("canvas-refreshing")
+    clear_canvas("canvas-static")
+
+    let radii = document.getElementById("radius-input").value.split(",");
+    
+    if (radii.length < 2) {
+        return;
+    }
+    t_biggest = 0; // reset
+    circles = radii.map(radius => ({radius}));
+    rotations = get_rotations(circles)
+    abs_t_rotations = get_abs_t_rotations(rotations)
+
+    window.requestAnimationFrame(step);
+}
+
+
+// on load code  ////////////////////////////////////////////////
+window.onload = function () {
+       document.getElementById("start-animation").onclick=startAnimation;
+}
+

@@ -1,0 +1,21 @@
+
+
+#canvas-wrapper {
+    position: relative;
+    width: 800px;
+    height: 800px;
+}
+
+#canvas-static {
+    position: absolute;
+    border: 1px solid black;
+}
+
+#canvas-refreshing {
+    position: absolute;
+    border: 1px solid black;
+}
+
+#radius-input {
+    margin-top: 10px;
+}
