@@ -40,6 +40,24 @@ function convert_x_y_to_canvas(x, y, canvas) {
 	return {right: right, down: down}
 }
 
+function draw_2_point_line(start_point, end_point, color, canvas_id) {	
+    var canvas = document.getElementById(canvas_id);
+    
+    let start = convert_x_y_to_canvas(start_point.x, start_point.y, canvas)
+    let end = convert_x_y_to_canvas(end_point.x, end_point.y, canvas)
+   
+    console.log(start_point) 
+    console.log(end_point) 
+    var ctx = canvas.getContext("2d");
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(start.right, start.down);
+    ctx.lineTo(end.right, end.down);
+    ctx.stroke();
+}
+
+
+    
 function draw_point(x, y, color, canvas_id) {	
 	var canvas = document.getElementById(canvas_id);
 	var coords = convert_x_y_to_canvas(x, y, canvas)
@@ -159,8 +177,8 @@ function get_revolve_directions(circles, rotate_directions) {
 
 
 ////// global values for step function /////
-const pen_radius = 25
-const theta_increment = Math.PI / 180
+const pen_radius = 38
+const theta_increment = (2 * Math.PI) / 45
 
 
 let circles = []
@@ -168,6 +186,8 @@ let rotations = []
 let revolutions = []
 let rotate_directions = [] 
 let revolve_directions = [] 
+
+let points = []
 
 
 // big circle angle radians
@@ -202,19 +222,24 @@ function step() {
     // draw spirograph point and pen line
     var angle_rotated = rotate_directions[i-1] * rotations[i-1] * t_biggest 
     var spiro = get_point(pen_radius, angle_rotated, offset)
+    points.push(spiro)
+    draw_point(spiro.x, spiro.y, "#0000ff", "canvas-static")
     draw_line(angle_rotated, offset, pen_radius, "canvas-refreshing")
-    draw_point(spiro.x, spiro.y, "#ff2626", "canvas-static")
+    
+    if (points.length >= 2) {
+        draw_2_point_line(points[points.length-1], points[points.length-2], "#ff2626", "canvas-static")
+    } 
 
-    //draw_point(pen.x, pen.y, "#ff26ff")
 	t_biggest += theta_increment
 
     setTimeout(function () { clear_canvas("canvas-refreshing") } , 10)
     // stop drawing
-    if (t_biggest < Math.PI * 8) {
+    if (t_biggest <= 4 * Math.PI) {
         window.requestAnimationFrame(step);
-    }
+    } else {
+        draw_2_point_line(points[points.length-1], points[0],  "#ff2626", "canvas-static")
+    } 
 }
-
 
 
 function startAnimation() {
@@ -230,6 +255,7 @@ function startAnimation() {
         return;
     }
     t_biggest = 0; // reset
+    points = []
 
     rotations = get_rotations(circles)
     revolutions = get_revolutions(rotations)

@@ -32,6 +32,8 @@ body {
     display: inline-block;
 
     vertical-align: top; /* not sure why necessary */
+}
 
-
+#start-animation {
+    display: block
 }
