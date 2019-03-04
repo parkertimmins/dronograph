@@ -46,8 +46,6 @@ function draw_2_point_line(start_point, end_point, color, canvas_id) {
     let start = convert_x_y_to_canvas(start_point.x, start_point.y, canvas)
     let end = convert_x_y_to_canvas(end_point.x, end_point.y, canvas)
    
-    console.log(start_point) 
-    console.log(end_point) 
     var ctx = canvas.getContext("2d");
     ctx.strokeStyle = color;
     ctx.beginPath();
@@ -178,9 +176,9 @@ function get_revolve_directions(circles, rotate_directions) {
 
 ////// global values for step function /////
 const pen_radius = 38
-const theta_increment = (2 * Math.PI) / 45
 
-
+// initialize
+let theta_increment = 0
 let circles = []
 let rotations = []
 let revolutions = []
@@ -237,6 +235,7 @@ function step() {
     if (t_biggest <= 4 * Math.PI) {
         window.requestAnimationFrame(step);
     } else {
+        console.log("Number sample points: " + points.length)
         draw_2_point_line(points[points.length-1], points[0],  "#ff2626", "canvas-static")
     } 
 }
@@ -246,6 +245,8 @@ function startAnimation() {
     clear_canvas("canvas-refreshing")
     clear_canvas("canvas-static")
 
+    numSamplePoints = parseInt(document.getElementById("sample-points").value)
+    
     let lines = document.getElementById("radius-input").value.split("\n").filter(line => line.length > 0)
     circles = lines.map(split_circle_line);
     console.log(circles)
@@ -261,6 +262,7 @@ function startAnimation() {
     revolutions = get_revolutions(rotations)
     rotate_directions = get_rotate_directions(circles)
     revolve_directions = get_revolve_directions(circles, rotate_directions)
+    theta_increment = (2 * Math.PI) / numSamplePoints 
 
     window.requestAnimationFrame(step);
 }
