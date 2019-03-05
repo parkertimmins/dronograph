@@ -8,11 +8,19 @@
     <body>
 
         <div id="spiro-control">
-            <textarea id="radius-input" cols="6" rows="20">
-200h
+            <label for="stator-radius">Stator radius</label>
+            <input id="stator-radius" type="number" value="200"/>
+            
+            <label for="radius-input">Rotors</label>
+            <textarea id="radius-input" cols="6" rows="10">
 50h
 20e</textarea>
-            <input id="sample-points" type="text" placeholder="# sample points"/>
+            
+            <label for="pen-radius">Pen radius</label>
+            <input id="pen-radius" type="number" placeholder="pen radius" value="38"/>
+            
+            <label for="sample-radius"># Sample Points</label>
+            <input id="sample-points" type="number" placeholder="# sample points" value="48"/>
             
             <button id="start-animation">Start</button>
         </div>

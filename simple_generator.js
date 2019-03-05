@@ -169,15 +169,15 @@ function get_revolve_directions(circles, rotate_directions) {
 
 
 
-// run ////////////////////////////////////
+////////////////////////////// run ////////////////////////////////////
 
 
 
 
 ////// global values for step function /////
-const pen_radius = 38
 
 // initialize
+let pen_radius = 0
 let theta_increment = 0
 let circles = []
 let rotations = []
@@ -232,7 +232,7 @@ function step() {
 
     setTimeout(function () { clear_canvas("canvas-refreshing") } , 10)
     // stop drawing
-    if (t_biggest <= 4 * Math.PI) {
+    if (t_biggest < 4 * Math.PI) {
         window.requestAnimationFrame(step);
     } else {
         console.log("Number sample points: " + points.length)
@@ -246,9 +246,13 @@ function startAnimation() {
     clear_canvas("canvas-static")
 
     numSamplePoints = parseInt(document.getElementById("sample-points").value)
+    pen_radius = parseInt(document.getElementById("pen-radius").value)
     
-    let lines = document.getElementById("radius-input").value.split("\n").filter(line => line.length > 0)
-    circles = lines.map(split_circle_line);
+    let stator_radius = parseInt(document.getElementById("stator-radius").value);
+    circles = [ {radius: stator_radius} ] 
+    
+    let rotor_lines = document.getElementById("radius-input").value.split("\n").filter(line => line.length > 0)
+    circles = circles.concat(rotor_lines.map(split_circle_line));
     console.log(circles)
    
     if (circles.length < 2) {
@@ -262,7 +266,7 @@ function startAnimation() {
     revolutions = get_revolutions(rotations)
     rotate_directions = get_rotate_directions(circles)
     revolve_directions = get_revolve_directions(circles, rotate_directions)
-    theta_increment = (2 * Math.PI) / numSamplePoints 
+    theta_increment = (2 * Math.PI) / numSamplePoints
 
     window.requestAnimationFrame(step);
 }

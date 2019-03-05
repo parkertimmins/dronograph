@@ -24,7 +24,6 @@ body {
 }
 
 #radius-input {
-    margin-top: 10px;
 }
 
 #spiro-control {
@@ -35,5 +34,14 @@ body {
 }
 
 #start-animation {
-    display: block
+    display: block;
+}
+
+label {
+    margin-top: 10px;
+    display: block;
+}
+
+input {
+    width: 6em;
 }
