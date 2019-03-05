@@ -1,4 +1,24 @@
 
+function furthest_point_from_center(circles, pen_radius) {
+    let furthest = 0;
+    for (var c = 1; c < circles.length; c++) {
+        const parent = circles[c-1];
+        const circle = circles[c];
+    
+        // this case is weird and overestimates if there is ever a child circle
+        if (circle.inner && circle.radius > parent.radius) {
+            furthest -= parent.radius
+            furthest += circle.radius
+        }  else {
+            furthest += parent.radius;
+            furthest += (circle.inner ? -circle.radius : circle.radius);
+        }
+    }
+
+    furthest += pen_radius;
+    return furthest;
+}
+
 function split_circle_line(radius_type) {
     var match = /^(\d+)(h|e)$/.exec(radius_type);
     if (match) {
@@ -71,6 +91,7 @@ function draw_circle(x, y, radius, color, canvas_id) {
     var canvas = document.getElementById(canvas_id);
     var coords = convert_x_y_to_canvas(x, y, canvas)
     var ctx = canvas.getContext("2d");
+  	ctx.strokeStyle = color
     ctx.beginPath();
     ctx.arc(coords.right, coords.down, radius, 0, 2 * Math.PI);
     ctx.stroke();
@@ -197,7 +218,7 @@ function step() {
     let offset = {x: 0, y: 0}
 
     // draw stator
-    draw_circle(offset.x, offset.y, circles[0].radius, "#ff26ff", "canvas-refreshing")
+    draw_circle(offset.x, offset.y, circles[0].radius, "#000000", "canvas-refreshing")
 
     for (var i = 1; i < circles.length; i++) {
         var parent_radius = circles[i-1].radius 
@@ -208,7 +229,7 @@ function step() {
 
         var center = get_point(center_radius, angle_around, offset)
 
-        draw_circle(center.x, center.y, radius, "#ff26ff", "canvas-refreshing")
+        draw_circle(center.x, center.y, radius, "#000000", "canvas-refreshing")
         
         var angle_rotated = rotate_directions[i] * rotations[i] * t_biggest 
         draw_line(angle_rotated, center, radius, "canvas-refreshing")
@@ -232,7 +253,7 @@ function step() {
 
     setTimeout(function () { clear_canvas("canvas-refreshing") } , 10)
     // stop drawing
-    if (t_biggest < 4 * Math.PI) {
+    if (t_biggest < 40 * Math.PI) {
         window.requestAnimationFrame(step);
     } else {
         console.log("Number sample points: " + points.length)
@@ -254,7 +275,11 @@ function startAnimation() {
     let rotor_lines = document.getElementById("radius-input").value.split("\n").filter(line => line.length > 0)
     circles = circles.concat(rotor_lines.map(split_circle_line));
     console.log(circles)
-   
+
+    const furthest_radius = furthest_point_from_center(circles, pen_radius);
+    draw_circle(0, 0, furthest_radius, "#4e2a84", "canvas-static");
+
+
     if (circles.length < 2) {
         //alert("Must input at least 2 comma separated radii");
         return;
