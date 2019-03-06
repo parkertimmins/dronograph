@@ -1,4 +1,26 @@
 
+function convert_to_lat_long(point, lat_origin_degree, long_origin_degree, meters_per_unit) {
+    const x_meters = meters_per_unit * point.x;
+    const y_meters = meters_per_unit * point.y;
+    
+    const METER_PER_LAT_DEGREE = 111321;
+
+    const y_lat_degree = lat_origin_degree + y_meters / METER_PER_LAT_DEGREE 
+    const y_lat_radians = y_lat_degree * Math.PI / 180
+    const meter_per_long_degree = Math.cos(y_lat_radians) * METER_PER_LAT_DEGREE 
+    const x_long_degree = long_origin_degree + x_meters / meter_per_long_degree
+
+    return {
+        latitude: y_lat_degree,
+        longitude: x_long_degree,
+    }
+}
+
+
+function cycles_before_repeats(circles) {
+    
+}
+
 function furthest_point_from_center(circles, pen_radius) {
     let furthest = 0;
     for (var c = 1; c < circles.length; c++) {
@@ -253,11 +275,28 @@ function step() {
 
     setTimeout(function () { clear_canvas("canvas-refreshing") } , 10)
     // stop drawing
-    if (t_biggest < 40 * Math.PI) {
+    if (t_biggest < 4 * Math.PI) {
         window.requestAnimationFrame(step);
     } else {
         console.log("Number sample points: " + points.length)
         draw_2_point_line(points[points.length-1], points[0],  "#ff2626", "canvas-static")
+
+
+        let meters_radius = parseInt(document.getElementById("scale-radius").value);
+        let lat_origin = parseFloat(document.getElementById("center-latitude").value);
+        let long_origin = parseFloat(document.getElementById("center-longitude").value);
+        
+        let meters_per_unit = meters_radius / points[0].x;
+
+        console.log("latitude,longitude,height"); 
+        var output = ""
+        for (var i = 0; i < points.length; i++) {
+            let point_lat_long = convert_to_lat_long(points[i], lat_origin, long_origin, meters_per_unit);
+            output += (point_lat_long.latitude + "," + point_lat_long.longitude + ",200" + "\n");
+        }
+        console.log(output);
+
+
     } 
 }
 
@@ -276,9 +315,8 @@ function startAnimation() {
     circles = circles.concat(rotor_lines.map(split_circle_line));
     console.log(circles)
 
-    const furthest_radius = furthest_point_from_center(circles, pen_radius);
-    draw_circle(0, 0, furthest_radius, "#4e2a84", "canvas-static");
-
+    //const furthest_radius = furthest_point_from_center(circles, pen_radius);
+    //draw_circle(0, 0, furthest_radius, "#4e2a84", "canvas-static");
 
     if (circles.length < 2) {
         //alert("Must input at least 2 comma separated radii");
