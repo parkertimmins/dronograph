@@ -1,4 +1,39 @@
 
+
+function add_altitude(lat_long_point, altitude) {
+	return {
+		latitude: lat_long_point.latitude,
+		longitude: lat_long_point.longitude,
+		altitude: altitude 
+	}
+}
+
+function csv_template(waypoints) {
+	const format_line = waypoint => `${waypoint.latitude},${waypoint.longitude},${waypoint.altitude}`
+	const waypoints_str = waypoints.map(format_line).join("\n")
+	return "latitude,longitude,height\n" + waypoints_str;
+
+}
+
+function kml_template(waypoints) {
+	const format_line = waypoint => `${waypoint.longitude},${waypoint.latitude},${waypoint.altitude}`
+	const waypoints_str = waypoints.map(format_line).join("\n")
+	return `<?xml version="1.0" encoding="UTF-8"?>
+		<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+		<Document>
+		<Placemark>
+				<LineString>
+                    <altitudeMode>relativeToGround</altitudeMode>
+					<tessellate>0</tessellate>
+					<coordinates>${waypoints_str}</coordinates>
+				</LineString>
+			</Placemark>
+		</Document>
+		</kml>
+	`
+}
+
+
 function convert_to_lat_long(point, lat_origin_degree, long_origin_degree, meters_per_unit) {
     const x_meters = meters_per_unit * point.x;
     const y_meters = meters_per_unit * point.y;
@@ -17,9 +52,6 @@ function convert_to_lat_long(point, lat_origin_degree, long_origin_degree, meter
 }
 
 
-function cycles_before_repeats(circles) {
-    
-}
 
 function furthest_point_from_center(circles, pen_radius) {
     let furthest = 0;
@@ -219,6 +251,24 @@ function get_revolve_directions(circles, rotate_directions) {
 
 ////// global values for step function /////
 
+/*
+let spiro_inputs = {
+    pen_radius, 
+    circles,
+}
+
+let spiro_derived = {
+    rotations,
+    revolutions,
+    rotate_directions,
+    revolve_directions,
+}
+*/
+
+
+
+
+
 // initialize
 let pen_radius = 0
 let theta_increment = 0
@@ -288,18 +338,23 @@ function step() {
         
         let meters_per_unit = meters_radius / points[0].x;
 
-        console.log("latitude,longitude,height"); 
-        var output = ""
-        for (var i = 0; i < points.length; i++) {
-            let point_lat_long = convert_to_lat_long(points[i], lat_origin, long_origin, meters_per_unit);
-            output += (point_lat_long.latitude + "," + point_lat_long.longitude + ",200" + "\n");
-        }
-        console.log(output);
 
+		const waypoints = points.map(point => {
+			let point_lat_long = convert_to_lat_long(point, lat_origin, long_origin, meters_per_unit);
+			let waypoint = add_altitude(point_lat_long, 50); 
+			return waypoint
+		});
+
+        // wrap back to beginning
+        waypoints.push(waypoints[0]);
+        
+        var kml = kml_template(waypoints);
+        var csv = csv_template(waypoints);
+
+		download('path.kml', kml);
 
     } 
 }
-
 
 function startAnimation() {
     clear_canvas("canvas-refreshing")
@@ -329,12 +384,23 @@ function startAnimation() {
     revolutions = get_revolutions(rotations)
     rotate_directions = get_rotate_directions(circles)
     revolve_directions = get_revolve_directions(circles, rotate_directions)
-    theta_increment = (2 * Math.PI) / numSamplePoints
+    theta_increment = (2 * Math.PI) / (numSamplePoints - 1)
 
     window.requestAnimationFrame(step);
 }
 
+function download(filename, text) {
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
 
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
 
 
 
