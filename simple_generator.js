@@ -1,4 +1,10 @@
 
+function rotations_to_complete(circles) {
+    
+
+}
+
+
 
 function add_altitude(lat_long_point, altitude) {
 	return {
@@ -32,7 +38,6 @@ function kml_template(waypoints) {
 		</kml>
 	`
 }
-
 
 function convert_to_lat_long(point, lat_origin_degree, long_origin_degree, meters_per_unit) {
     const x_meters = meters_per_unit * point.x;
@@ -251,32 +256,22 @@ function get_revolve_directions(circles, rotate_directions) {
 
 ////// global values for step function /////
 
-/*
-let spiro_inputs = {
-    pen_radius, 
-    circles,
-}
 
-let spiro_derived = {
-    rotations,
-    revolutions,
-    rotate_directions,
-    revolve_directions,
-}
-*/
+// required inputs to draw
+// circles - stator, rotors
+// pen_radius
+// sample_points
+// start-segment
+// end-segment
 
+let inputs = null; 
+let input_rotations = null; 
+let point_samples = null; 
+let current_point = 0;
 
 
 
-
-// initialize
-let pen_radius = 0
 let theta_increment = 0
-let circles = []
-let rotations = []
-let revolutions = []
-let rotate_directions = [] 
-let revolve_directions = [] 
 
 let points = []
 
@@ -286,61 +281,41 @@ let t_biggest = 0
 
 // TODO change to be time based
 function step() {
-   
-    let offset = {x: 0, y: 0}
+  
+    const point_sample = point_samples[current_point];
+  
+    // draw all circles and the spiro point
+    draw_state_at_point(inputs.circles, inputs.pen_radius, point_sample);
 
-    // draw stator
-    draw_circle(offset.x, offset.y, circles[0].radius, "#000000", "canvas-refreshing")
-
-    for (var i = 1; i < circles.length; i++) {
-        var parent_radius = circles[i-1].radius 
-        var radius = circles[i].radius 
-       
-        var angle_around = revolve_directions[i] * revolutions[i] * t_biggest 
-        var center_radius = circles[i].inner ? parent_radius - radius : parent_radius + radius
-
-        var center = get_point(center_radius, angle_around, offset)
-
-        draw_circle(center.x, center.y, radius, "#000000", "canvas-refreshing")
-        
-        var angle_rotated = rotate_directions[i] * rotations[i] * t_biggest 
-        draw_line(angle_rotated, center, radius, "canvas-refreshing")
-        
-        offset = center
+    // draw line between last
+    if (current_point >= 1) {
+        const last_point_sample = point_samples[current_point-1];
+        draw_2_point_line(point_sample.spiro_point, last_point_sample.spiro_point, "#ff2626", "canvas-static")
     } 
-        
-      
-    // draw spirograph point and pen line
-    var angle_rotated = rotate_directions[i-1] * rotations[i-1] * t_biggest 
-    var spiro = get_point(pen_radius, angle_rotated, offset)
-    points.push(spiro)
-    draw_point(spiro.x, spiro.y, "#0000ff", "canvas-static")
-    draw_line(angle_rotated, offset, pen_radius, "canvas-refreshing")
-    
-    if (points.length >= 2) {
-        draw_2_point_line(points[points.length-1], points[points.length-2], "#ff2626", "canvas-static")
-    } 
-
-	t_biggest += theta_increment
 
     setTimeout(function () { clear_canvas("canvas-refreshing") } , 10)
+
     // stop drawing
-    if (t_biggest < 4 * Math.PI) {
+    if (current_point < point_samples.length - 1) {
+        current_point += 1;
         window.requestAnimationFrame(step);
     } else {
-        console.log("Number sample points: " + points.length)
+        current_point = 0;
+    }
+    
+    
+    /* 
+    else {
         draw_2_point_line(points[points.length-1], points[0],  "#ff2626", "canvas-static")
 
-
         let meters_radius = parseInt(document.getElementById("scale-radius").value);
-        let lat_origin = parseFloat(document.getElementById("center-latitude").value);
-        let long_origin = parseFloat(document.getElementById("center-longitude").value);
+        
+        let lat_long = validate_lat_long(document.getElementById("center-lat-long").value).value;
         
         let meters_per_unit = meters_radius / points[0].x;
 
-
 		const waypoints = points.map(point => {
-			let point_lat_long = convert_to_lat_long(point, lat_origin, long_origin, meters_per_unit);
+			let point_lat_long = convert_to_lat_long(point, lat_long.latitude, lat_long.longitude, meters_per_unit);
 			let waypoint = add_altitude(point_lat_long, 50); 
 			return waypoint
 		});
@@ -351,40 +326,47 @@ function step() {
         var kml = kml_template(waypoints);
         var csv = csv_template(waypoints);
 
-		download('path.kml', kml);
+		download('path_' + waypoints.length + ".kml", kml);
 
     } 
+    */
 }
+
+function draw_state_at_point(circles, pen_radius, point_sample) {
+
+    // draw stator
+    draw_circle(0, 0, circles[0].radius, "#000000", "canvas-refreshing")
+  
+    // draw rotors 
+    for (let i = 1; i < circles.length; i++) {
+        const parent_radius = circles[i-1].radius;
+        const radius = circles[i].radius;
+        const settings = point_sample.circle_settings[i - 1]; // for this circle ... has no value for stator
+        
+        draw_circle(settings.center.x, settings.center.y, radius, "#000000", "canvas-refreshing")
+        draw_line(settings.angle_rotated, settings.center, radius, "canvas-refreshing")
+    } 
+        
+    // draw pen
+    const last_circle_settings = point_sample.circle_settings[point_sample.circle_settings.length - 1];
+    draw_line(last_circle_settings.angle_rotated, last_circle_settings.center, pen_radius, "canvas-refreshing")
+      
+    // draw point 
+    const spiro = point_sample.spiro_point;
+    draw_point(spiro.x, spiro.y, "#0000ff", "canvas-static")
+}
+
+
 
 function startAnimation() {
     clear_canvas("canvas-refreshing")
     clear_canvas("canvas-static")
 
-    numSamplePoints = parseInt(document.getElementById("sample-points").value)
-    pen_radius = parseInt(document.getElementById("pen-radius").value)
-    
-    let stator_radius = parseInt(document.getElementById("stator-radius").value);
-    circles = [ {radius: stator_radius} ] 
-    
-    let rotor_lines = document.getElementById("radius-input").value.split("\n").filter(line => line.length > 0)
-    circles = circles.concat(rotor_lines.map(split_circle_line));
-    console.log(circles)
+    inputs = get_draw_inputs();
+    input_rotations = get_input_rotations(inputs.circles);
+    point_samples = get_sample_points(inputs, input_rotations);
 
-    //const furthest_radius = furthest_point_from_center(circles, pen_radius);
-    //draw_circle(0, 0, furthest_radius, "#4e2a84", "canvas-static");
-
-    if (circles.length < 2) {
-        //alert("Must input at least 2 comma separated radii");
-        return;
-    }
-    t_biggest = 0; // reset
-    points = []
-
-    rotations = get_rotations(circles)
-    revolutions = get_revolutions(rotations)
-    rotate_directions = get_rotate_directions(circles)
-    revolve_directions = get_revolve_directions(circles, rotate_directions)
-    theta_increment = (2 * Math.PI) / (numSamplePoints - 1)
+    console.log(point_samples.length);
 
     window.requestAnimationFrame(step);
 }
@@ -409,3 +391,126 @@ window.onload = function () {
        document.getElementById("start-animation").onclick=startAnimation;
 }
 
+
+////// Validation functions ///////////////////
+
+function get_single_point_settings(angle_biggest_rotor, inputs, input_rotations) {
+    const circles = inputs.circles;
+    const pen_radius = inputs.pen_radius;
+    const rotations = input_rotations.rotations;
+    const revolutions = input_rotations.revolutions;
+    const rotate_directions = input_rotations.rotate_directions;
+    const revolve_directions = input_rotations.revolve_directions;
+
+
+    const circle_settings = [];
+    let offset = {x: 0, y: 0};
+
+    for (let i = 1; i < circles.length; i++) {
+        const parent = circles[i-1];
+        const circle = circles[i];
+       
+        const angle_around = revolve_directions[i] * revolutions[i] * angle_biggest_rotor;
+        const center_radius = circle.inner ? parent.radius - circle.radius : parent.radius + circle.radius;
+        const center = get_point(center_radius, angle_around, offset);
+        const angle_rotated = rotate_directions[i] * rotations[i] * angle_biggest_rotor;
+        
+        circle_settings.push({
+            center: center,
+            angle_rotated: angle_rotated   
+        });   
+
+        offset = center;
+    } 
+        
+    const last_circle_angle_rotated = circle_settings[circle_settings.length-1].angle_rotated
+    const spiro_point = get_point(pen_radius, last_circle_angle_rotated, offset);
+    return {
+        spiro_point: spiro_point,
+        circle_settings: circle_settings
+    };      
+}
+
+
+function get_sample_points(inputs, input_rotations) {
+    
+    const angle_diff_degrees = inputs.end_segment_degrees - inputs.start_segment_degrees;
+    const angle_diff_radians = to_radians(angle_diff_degrees);
+    const start_angle_radians = to_radians(inputs.start_segment_degrees);
+
+    const angle_increment = angle_diff_radians / (inputs.num_sample_points - 1);
+    
+    const point_samples = [];
+    
+    for (let i = 0; i < inputs.num_sample_points; i++) {
+        const angle_biggest_rotor = i * angle_increment;
+        const sample = get_single_point_settings(angle_biggest_rotor, inputs, input_rotations);
+        point_samples.push(sample);
+    }
+
+    return point_samples;
+}
+
+function to_radians(degree) {
+    return degree * Math.PI / 180;
+}
+
+
+function get_input_rotations(circles) {
+    const rotations = get_rotations(circles);
+    const revolutions = get_revolutions(rotations);
+    const rotate_directions = get_rotate_directions(circles);
+    const revolve_directions = get_revolve_directions(circles, rotate_directions);
+    return { 
+        rotations,
+        revolutions,
+        rotate_directions,
+        revolve_directions
+    };
+}
+
+function get_draw_inputs() {
+    const stator_radius = parseInt(document.getElementById("stator-radius").value);
+    const rotor_lines = document.getElementById("radius-input").value
+        .split("\n").filter(line => line.length > 0);
+   
+    let circles = [ {radius: stator_radius} ];
+    circles = circles.concat(rotor_lines.map(split_circle_line));
+
+    const pen_radius = parseInt(document.getElementById("pen-radius").value)
+
+    const num_sample_points = parseInt(document.getElementById("sample-points").value);
+    const start_segment_degrees = parseFloat(document.getElementById("start-segment").value);
+    const end_segment_degrees = parseFloat(document.getElementById("end-segment").value);
+
+    return {
+        circles,
+        pen_radius,
+        num_sample_points,
+        start_segment_degrees,
+        end_segment_degrees
+    } 
+}
+
+function validate_lat_long(input) {
+    const error_msg = "Latitude, Longitude input must be two comma separated value decimal numbers between -180 and 180"
+
+    if (input === null) {
+        return { error: error_msg };
+    }
+
+    const parts = input.split(/,| /)
+    if (parts.length !== 2) {
+        return { error: error_msg };
+    }
+
+    const lat = parseFloat(parts[0]);
+    const long = parseFloat(parts[1]);
+   
+    // NaN will fail 
+    if (lat < -180 || lat > 180 || long < -180 || long > 180) {
+        return { error: error_msg };
+    }
+
+    return { value: { latitude: lat, longitude: long } };
+}
