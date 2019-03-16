@@ -16,6 +16,68 @@ function add_altitude(lat_long_point, altitude) {
 	}
 }
 
+function deleteRotor(event) {
+	const number_rotors = document.getElementsByClassName("rotor").length;
+	if (number_rotors > 1) {
+		const deleteButton = event.target; 
+		const rotorDiv = deleteButton.parentNode;
+		rotorDiv.parentNode.removeChild(rotorDiv);
+	}
+}
+
+function rotorElementToCircle(rotorElement) {
+	return { 
+		radius: parseFloat(rotorElement.getElementsByClassName("rotor-radius")[0].value),
+		inner: rotorElement.getElementsByClassName("hypotrochoid")[0].checked
+	};
+}
+
+function addNewRotor() {
+	const rotorElements = toArray(document.querySelectorAll('.rotor'))
+	const lastRotor = rotorElements[rotorElements.length - 1]
+	const lastRotorCircle = rotorElementToCircle(lastRotor)
+	add_rotor_node(lastRotorCircle.radius / 2, !lastRotorCircle.inner);
+}
+
+function toArray(nodeList) {
+	return [].slice.call(nodeList);
+}
+
+function maxRotorId(rotorElements) {
+	const rotorElementArray = toArray(rotorElements);
+	return rotorElementArray.length === 0 ? 0
+		: Math.max(...rotorElementArray.map(element => parseInt(element.dataset.rotor_id)));
+}
+
+function add_rotor_node(radius, inner) {
+	const max_rotor_id = maxRotorId(document.querySelectorAll('.rotor'));
+	const new_rotor_id = max_rotor_id + 1;
+	
+	const html = rotor_div_template({radius, inner}, new_rotor_id);
+    const template = document.createElement('template');
+    template.innerHTML = html;
+	document.getElementById("rotors").appendChild(template.content.firstChild);
+}
+
+function rotor_div_template(circle, rotor_id) {
+    return `<div class="rotor" data-rotor_id="${rotor_id}">
+        		<input class="rotor-radius" type="number" min="0" value="${circle.radius}"/>
+				<label>
+					<input type="radio" class="hypotrochoid" name="trochoid-type_${rotor_id}" value="h" ${circle.inner ? 'checked' : ''}>
+					h
+				</label>
+				<label>
+					<input type="radio" class="epitrochoid" name="trochoid-type${rotor_id}" value="e" ${!circle.inner ? 'checked' : ''}>
+					e
+				</label>
+				<button class="delete-rotor">&#x2716</button>
+			</div>
+
+        `
+}
+
+
+
 function csv_template(waypoints) {
 	const format_line = waypoint => `${waypoint.latitude},${waypoint.longitude},${waypoint.altitude}`
 	const waypoints_str = waypoints.map(format_line).join("\n")
@@ -268,15 +330,22 @@ function get_input_rotations(circles) {
     return { rotations, revolutions };
 }
 
-function get_draw_inputs() {
-    const stator_radius = parseInt(document.getElementById("stator-radius").value);
-    const rotor_lines = document.getElementById("radius-input").value
-        .split("\n").filter(line => line.length > 0);
-   
-    let circles = [ {radius: stator_radius} ];
-    circles = circles.concat(rotor_lines.map(split_circle_line));
+function valid_circles(circles) {
+     
+}
 
-    const pen_radius = parseInt(document.getElementById("pen-radius").value)
+function get_circle_inputs() {
+	const stator_radius = parseFloat(document.getElementById("stator-radius").value);
+    let circles = [ {radius: stator_radius} ];
+	const rotorElements = toArray(document.querySelectorAll('.rotor'))
+    circles = circles.concat(rotorElements.map(rotorElementToCircle));
+	const pen_radius = parseFloat(document.getElementById("pen-radius").value)
+    return { circles, pen_radius };
+}
+
+function get_draw_inputs() {
+
+    const { circles, pen_radius } = get_circle_inputs();
 
     const num_sample_points = parseInt(document.getElementById("sample-points").value);
     const start_segment_degrees = parseFloat(document.getElementById("start-segment").value);
@@ -410,12 +479,10 @@ function step(timestamp) {
 
 function on_circles_change() {
 
-    // get circles, pen_radius
-
-
-     const { rotations, revolutions } = get_input_rotations(circles);
-     const sample = get_single_point_settings(0, circles, pen_radius, rotations, revolutions);
-     draw_state_at_point(circles, pen_radius, sample);
+    const { circles, pen_radius } = get_circle_inputs();
+    const { rotations, revolutions } = get_input_rotations(circles);
+    const sample = get_single_point_settings(0, circles, pen_radius, rotations, revolutions);
+    draw_state_at_point(circles, pen_radius, sample);
 }
 
 function draw_state_at_point(circles, pen_radius, circle_settings) {
@@ -488,9 +555,17 @@ function download(filename, text) {
 
 
 
+
 // on load code  ////////////////////////////////////////////////
 window.onload = function () {
-       document.getElementById("start-animation").onclick=startAnimation;
-       document.getElementById("draw-completely").onclick=drawCompletely;
+	
+	add_rotor_node(50, true);
+	add_rotor_node(20, false);
+
+    document.getElementById("start-animation").onclick=startAnimation;
+   	document.getElementById("draw-completely").onclick=drawCompletely;
+   	
+	document.getElementById("add-rotor").onclick=addNewRotor;
+	document.querySelectorAll('.delete-rotor').forEach(element => element.onclick=deleteRotor);
 }
 

@@ -8,14 +8,19 @@
     <body>
 
         <div id="spiro-control">
-            <label for="stator-radius">Stator radius</label>
-            <input id="stator-radius" type="number" value="200"/>
-            
-            <label for="radius-input">Rotors</label>
-            <textarea id="radius-input" cols="6" rows="10">
-50h
-20e</textarea>
-            
+            <div>
+                <label for="stator-radius">Stator radius</label>
+                <input id="stator-radius" type="number" value="200" min="0"/>
+            </div>
+
+            <div id="rotors-div">
+                <div id="rotors">
+                    <label for="radius-input">Rotors</label>
+                    <!-- Rotors added in javascript --> 
+                </div>
+                <button id="add-rotor">Add rotor</button>
+            </div> 
+
             <label for="pen-radius">Pen radius</label>
             <input id="pen-radius" type="number" placeholder="pen radius" value="38"/>
             
@@ -30,7 +35,7 @@
             
 			<select id="draw-speed">
 			  <option value="10">Slow</option>
-			  <option value="5">Medium</option>
+			  <option value="5" selected>Medium</option>
 			  <option value="1">Fast</option>
 			</select> 
 

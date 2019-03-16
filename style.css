@@ -33,15 +33,49 @@ body {
     vertical-align: top; /* not sure why necessary */
 }
 
+#center-lat-long {
+    width: 12em;
+}
+
+
+
+
 #start-animation {
+}
+
+#stator-radius {
     display: block;
+}
+
+.rotor .rotor-radius, 
+#stator-radius, 
+#pen-radius, 
+#sample-points,
+#start-segment,
+#end-segment,
+#scale-radius
+{
+    width: 4em;
+    display: block;
+}
+
+.rotor {
+    display: flex;
+    flex-direction: row;
+}
+.rotor button {
+    margin-left: 5px;
+}
+
+.delete-rotor {
+    color: darkred;
+}
+
+#rotors-div {
+    margin-top: 10px;
+    margin-bottom: 20px;
 }
 
 label {
-    margin-top: 10px;
-    display: block;
 }
 
-input {
-    width: 6em;
-}
