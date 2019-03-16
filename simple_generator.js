@@ -56,8 +56,6 @@ function convert_to_lat_long(point, lat_origin_degree, long_origin_degree, meter
     }
 }
 
-
-
 function furthest_point_from_center(circles, pen_radius) {
     let furthest = 0;
     for (var c = 1; c < circles.length; c++) {
@@ -132,8 +130,6 @@ function draw_2_point_line(start_point, end_point, color, canvas_id) {
     ctx.stroke();
 }
 
-
-    
 function draw_point(x, y, color, canvas_id) {	
 	var canvas = document.getElementById(canvas_id);
 	var coords = convert_x_y_to_canvas(x, y, canvas)
@@ -159,43 +155,6 @@ function get_point(radius, angle, offset) {
     return {
         x: radius * Math.cos(angle) + offset.x,
         y: radius * Math.sin(angle) + offset.y
-    }
-}
-
-
-function get_pen_coords(t_big) {
-	// contained circle angle radians
-	const t_small = -(big_radius - small_radius) * t_big / small_radius
-	
-	const x_small_c = (big_radius - small_radius) * Math.cos(t_big)
-	const y_small_c = (big_radius - small_radius) * Math.sin(t_big)
-	
-    const x_pen_offset = pen_radius * Math.cos(t_small) 
-	const y_pen_offset = pen_radius * Math.sin(t_small) 
-
-	const x_pen = x_small_c + x_pen_offset
-	const y_pen = y_small_c + y_pen_offset
-
-	return {x: x_pen, y: y_pen}
-}
-
-function get_small_offset_angle(big_radius, small_radius, t_big, offset_big) {
-    const t_small = -(big_radius - small_radius) * t_big / small_radius
-	const x_small_offset = (big_radius - small_radius) * Math.cos(t_big)
-	const y_small_offset = (big_radius - small_radius) * Math.sin(t_big)
-	return {
-        x: offset_big.x + x_small_offset,
-        y: offset_big.y + y_small_offset,
-        angle: t_small
-    }
-}
-
-function get_pen_from_last_circle(circle_offset, circle_angle, pen_radius) {
-	const x_pen_offset = pen_radius * Math.cos(circle_angle) 
-	const y_pen_offset = pen_radius * Math.sin(circle_angle) 
-    return {
-        x: circle_offset.x + x_pen_offset,
-        y: circle_offset.y + y_pen_offset
     }
 }
 
@@ -244,8 +203,7 @@ function get_revolve_directions(circles, rotate_directions) {
     return directions 
 }
 
-function get_single_point_settings(angle_biggest_rotor, circles, pen_radius, rotations, revolutions) {
-
+function get_circle_settings(angle_biggest_rotor, circles, pen_radius, rotations, revolutions) {
     const circle_settings = [];
     let offset = {x: 0, y: 0};
 
@@ -262,10 +220,20 @@ function get_single_point_settings(angle_biggest_rotor, circles, pen_radius, rot
         offset = center;
     } 
         
-    const last_circle_angle_rotated = circle_settings[circle_settings.length-1].angle_rotated
-    const spiro_point = get_point(pen_radius, last_circle_angle_rotated, offset);
+    return circle_settings;
+}
 
-    return { spiro_point, circle_settings };
+function get_point_settings(circle_settings, angle_biggest_rotor, circles, pen_radius) {
+    const last_circle = circle_settings[circle_settings.length-1];
+    const spiro_point = get_point(pen_radius, last_circle.angle_rotated, last_circle.center);
+    return { spiro_point, angle_biggest_rotor };
+}
+
+
+function get_single_point_settings(angle_biggest_rotor, circles, pen_radius, rotations, revolutions) {
+    const circle_settings = get_circle_settings(angle_biggest_rotor, circles, pen_radius, rotations, revolutions);
+    const point_settings = get_point_settings(circle_settings, angle_biggest_rotor, circles, pen_radius);
+    return { ...point_settings, circle_settings };
 }
 
 
@@ -312,13 +280,16 @@ function get_draw_inputs() {
     const num_sample_points = parseInt(document.getElementById("sample-points").value);
     const start_segment_degrees = parseFloat(document.getElementById("start-segment").value);
     const end_segment_degrees = parseFloat(document.getElementById("end-segment").value);
+    
+    const seconds_main_revolution = parseInt(document.getElementById("draw-speed").value);
 
     return {
         circles,
         pen_radius,
         num_sample_points,
         start_segment_degrees,
-        end_segment_degrees
+        end_segment_degrees,
+        seconds_main_revolution
     } 
 }
 
@@ -358,33 +329,49 @@ let inputs = null;
 let input_rotations = null; 
 let point_samples = null; 
 let current_point = 0;
+let draw_start_time = null;
 
 
-function step() {
-  
-    const point_sample = point_samples[current_point];
-  
-    // draw all circles 
-    draw_state_at_point(inputs.circles, inputs.pen_radius, point_sample);
-
-    // draw point 
-    const spiro = point_sample.spiro_point;
-    draw_point(spiro.x, spiro.y, "#0000ff", "canvas-static")
+function step(timestamp) {
+ 
+    if (!draw_start_time) draw_start_time = timestamp;
+    const progress = timestamp - draw_start_time;
     
-    // draw line between last
-    if (current_point >= 1) {
-        const last_point_sample = point_samples[current_point-1];
-        draw_2_point_line(point_sample.spiro_point, last_point_sample.spiro_point, "#ff2626", "canvas-static")
-    } 
+    const progress_single_main_rotation = (progress / (inputs.seconds_main_revolution * 1000)) * Math.PI * 2;
+    const start_angle_radians = to_radians(inputs.start_segment_degrees);
+    const angle_biggest_rotor = progress_single_main_rotation + start_angle_radians;
+
+
+    for (let i = current_point + 1; i < point_samples.length; i++) {
+        const point_sample = point_samples[i];
+        
+        if (point_sample.angle_biggest_rotor > angle_biggest_rotor) {
+            break;
+        } 
+        
+        current_point = i;
+
+        // draw point 
+        const spiro = point_sample.spiro_point;
+        draw_point(spiro.x, spiro.y, "#0000ff", "canvas-static")
+        
+        // draw line between last
+        if (i >= 1) {
+            const last_point_sample = point_samples[i-1];
+            draw_2_point_line(point_sample.spiro_point, last_point_sample.spiro_point, "#ff2626", "canvas-static")
+        } 
+
+    }
+
+    // draw all circles 
+    const circle_settings = get_circle_settings(angle_biggest_rotor, inputs.circles, inputs.pen_radius, input_rotations.rotations, input_rotations.revolutions);
+    draw_state_at_point(inputs.circles, inputs.pen_radius, circle_settings);
 
     setTimeout(function () { clear_canvas("canvas-refreshing") } , 10)
-
-    // stop drawing
+    
+        // stop drawing
     if (current_point < point_samples.length - 1) {
-        current_point += 1;
         window.requestAnimationFrame(step);
-    } else {
-        current_point = 0;
     }
     
     
@@ -416,7 +403,17 @@ function step() {
     */
 }
 
-function draw_state_at_point(circles, pen_radius, point_sample) {
+function on_circles_change() {
+
+    // get circles, pen_radius
+
+
+     const { rotations, revolutions } = get_input_rotations(circles);
+     const sample = get_single_point_settings(0, circles, pen_radius, rotations, revolutions);
+     draw_state_at_point(circles, pen_radius, sample);
+}
+
+function draw_state_at_point(circles, pen_radius, circle_settings) {
 
     // draw stator
     draw_circle(0, 0, circles[0].radius, "#000000", "canvas-refreshing")
@@ -425,14 +422,14 @@ function draw_state_at_point(circles, pen_radius, point_sample) {
     for (let i = 1; i < circles.length; i++) {
         const parent_radius = circles[i-1].radius;
         const radius = circles[i].radius;
-        const settings = point_sample.circle_settings[i - 1]; // for this circle ... has no value for stator
+        const settings = circle_settings[i - 1]; // for this circle ... has no value for stator
         
         draw_circle(settings.center.x, settings.center.y, radius, "#000000", "canvas-refreshing")
         draw_line(settings.angle_rotated, settings.center, radius, "canvas-refreshing")
     } 
         
     // draw pen
-    const last_circle_settings = point_sample.circle_settings[point_sample.circle_settings.length - 1];
+    const last_circle_settings = circle_settings[circle_settings.length - 1];
     draw_line(last_circle_settings.angle_rotated, last_circle_settings.center, pen_radius, "canvas-refreshing")
 }
 
@@ -465,8 +462,8 @@ function startAnimation() {
     inputs = get_draw_inputs();
     input_rotations = get_input_rotations(inputs.circles);
     point_samples = get_sample_points(inputs, input_rotations);
-
-    console.log(point_samples.length);
+    current_point = 0;
+    draw_start_time = null;
 
     window.requestAnimationFrame(step);
 }
