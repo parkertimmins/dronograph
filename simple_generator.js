@@ -6,6 +6,7 @@ function rotations_to_complete(circles) {
 
 
 const to_radians = degree => degree * Math.PI / 180;
+const to_degrees = radians => radians * 180 / Math.PI;
 
 function add_altitude(lat_long_point, altitude) {
 	return {
@@ -333,6 +334,7 @@ let draw_start_time = null;
 
 
 function step(timestamp) {
+    clear_canvas("canvas-refreshing");
  
     if (!draw_start_time) draw_start_time = timestamp;
     const progress = timestamp - draw_start_time;
@@ -363,11 +365,14 @@ function step(timestamp) {
 
     }
 
+    console.log(to_degrees(angle_biggest_rotor));
+
     // draw all circles 
-    const circle_settings = get_circle_settings(angle_biggest_rotor, inputs.circles, inputs.pen_radius, input_rotations.rotations, input_rotations.revolutions);
+    // stop drawing circle at end point
+    const circles_angle_biggest_rotor = Math.min(angle_biggest_rotor, to_radians(inputs.end_segment_degrees))
+    const circle_settings = get_circle_settings(circles_angle_biggest_rotor, inputs.circles, inputs.pen_radius, input_rotations.rotations, input_rotations.revolutions);
     draw_state_at_point(inputs.circles, inputs.pen_radius, circle_settings);
 
-    setTimeout(function () { clear_canvas("canvas-refreshing") } , 10)
     
         // stop drawing
     if (current_point < point_samples.length - 1) {
