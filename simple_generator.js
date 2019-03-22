@@ -65,11 +65,11 @@ function rotor_div_template(circle, rotor_id) {
     return `<div class="rotor" data-rotor_id="${rotor_id}">
         		<input class="rotor-radius" type="number" min="0" value="${circle.radius}"/>
 				<label>
-					<input type="radio" class="hypotrochoid" name="trochoid-type_${rotor_id}" value="h" ${circle.inner ? 'checked' : ''}>
+					<input type="radio" class="hypotrochoid" name="trochoid-type-${rotor_id}" value="h" ${circle.inner ? 'checked' : ''}>
 					h
 				</label>
 				<label>
-					<input type="radio" class="epitrochoid" name="trochoid-type${rotor_id}" value="e" ${!circle.inner ? 'checked' : ''}>
+					<input type="radio" class="epitrochoid" name="trochoid-type-${rotor_id}" value="e" ${!circle.inner ? 'checked' : ''}>
 					e
 				</label>
 				<button class="delete-rotor">&#x2716</button>
