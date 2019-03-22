@@ -24,16 +24,22 @@
             <label for="pen-radius">Pen radius</label>
             <input id="pen-radius" type="number" placeholder="pen radius" value="38"/>
             
-            <label for="sample-radius"># Sample Points</label>
-            <input id="sample-points" type="number" placeholder="# sample points" value="99"/>
+            <label for="sample-radius" title="number of points to output. FlyLitchi can handle a maximum of 99 per mission">
+                # Sample Points
+                <input id="sample-points" type="number" placeholder="# sample points" value="99"/>
+            </label>     
 
-            <label for="start-segment">Start segment degrees</label>
-            <input id="start-segment" type="number" value="0"/>
+            <label for="start-segment" title="Start of segment to draw and output">
+                Start segment degrees
+                <input id="start-segment" type="number" value="0"/>
+            </label>
 
-            <label for="end-segment">End segment degrees</label>
-            <input id="end-segment" type="number" value="720"/>
+            <label for="end-segment" title="End of segment to draw and output. Default to 2 full rotations of the main rotor">
+                End segment degrees
+                <input id="end-segment" type="number" value="720"/>
+            </label>
             
-			<select id="draw-speed">
+			<select id="draw-speed" title="Animation speed, one loop of main rotor in 10, 5 or 1 second">
 			  <option value="10">Slow</option>
 			  <option value="5" selected>Medium</option>
 			  <option value="1">Fast</option>
