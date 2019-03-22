@@ -54,9 +54,11 @@ function add_rotor_node(radius, inner) {
 	const new_rotor_id = max_rotor_id + 1;
 	
 	const html = rotor_div_template({radius, inner}, new_rotor_id);
+
     const template = document.createElement('template');
     template.innerHTML = html;
 	document.getElementById("rotors").appendChild(template.content.firstChild);
+	document.querySelectorAll('.delete-rotor').forEach(element => element.onclick=deleteRotor);
 }
 
 function rotor_div_template(circle, rotor_id) {
@@ -434,8 +436,6 @@ function step(timestamp) {
 
     }
 
-    console.log(to_degrees(angle_biggest_rotor));
-
     // draw all circles 
     // stop drawing circle at end point
     const circles_angle_biggest_rotor = Math.min(angle_biggest_rotor, to_radians(inputs.end_segment_degrees))
@@ -443,38 +443,41 @@ function step(timestamp) {
     draw_state_at_point(inputs.circles, inputs.pen_radius, circle_settings);
 
     
-        // stop drawing
+    // draw next frame 
     if (current_point < point_samples.length - 1) {
         window.requestAnimationFrame(step);
     }
+}
+
+function generate_waypoints() {
+    const inputs = get_draw_inputs();
+    const input_rotations = get_input_rotations(inputs.circles);
+    const point_samples = get_sample_points(inputs, input_rotations);
     
-    
-    /* 
-    else {
-        draw_2_point_line(points[points.length-1], points[0],  "#ff2626", "canvas-static")
+    const meters_radius = parseFloat(document.getElementById("scale-radius").value);
+    const lat_long = validate_lat_long(document.getElementById("center-lat-long").value).value;
+    const altitude = parseFloat(document.getElementById("altitude").value);
+    const meters_per_unit = meters_radius / point_samples[0].spiro_point.x;
 
-        let meters_radius = parseInt(document.getElementById("scale-radius").value);
-        
-        let lat_long = validate_lat_long(document.getElementById("center-lat-long").value).value;
-        
-        let meters_per_unit = meters_radius / points[0].x;
+    const waypoints = point_samples.map(sample => {
+        const point = sample.spiro_point;
+        const point_lat_long = convert_to_lat_long(point, lat_long.latitude, lat_long.longitude, meters_per_unit);
+        const waypoint = add_altitude(point_lat_long, altitude); 
+        return waypoint
+    });
+    return waypoints;
+}
 
-		const waypoints = points.map(point => {
-			let point_lat_long = convert_to_lat_long(point, lat_long.latitude, lat_long.longitude, meters_per_unit);
-			let waypoint = add_altitude(point_lat_long, 50); 
-			return waypoint
-		});
+function download_kml() {
+    const waypoints = generate_waypoints();
+    const kml = kml_template(waypoints);
+    download('path_' + waypoints.length + ".kml", kml);
+}
 
-        // wrap back to beginning
-        waypoints.push(waypoints[0]);
-        
-        var kml = kml_template(waypoints);
-        var csv = csv_template(waypoints);
-
-		download('path_' + waypoints.length + ".kml", kml);
-
-    } 
-    */
+function download_csv() {
+    const waypoints = generate_waypoints();
+    const csv= csv_template(waypoints);
+    download('path_' + waypoints.length + ".csv", csv);
 }
 
 function on_circles_change() {
@@ -553,9 +556,6 @@ function download(filename, text) {
   document.body.removeChild(element);
 }
 
-
-
-
 // on load code  ////////////////////////////////////////////////
 window.onload = function () {
 	
@@ -567,5 +567,8 @@ window.onload = function () {
    	
 	document.getElementById("add-rotor").onclick=addNewRotor;
 	document.querySelectorAll('.delete-rotor').forEach(element => element.onclick=deleteRotor);
+
+	document.getElementById("make-kml").onclick=download_kml;
+	document.getElementById("make-csv").onclick=download_csv;
 }
 

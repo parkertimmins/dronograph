@@ -53,7 +53,8 @@ body {
 #sample-points,
 #start-segment,
 #end-segment,
-#scale-radius
+#scale-radius,
+#altitude
 {
     width: 4em;
     display: block;
@@ -73,9 +74,15 @@ body {
 
 #rotors-div {
     margin-top: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 label {
+    display: block;
 }
+
+#output-container {
+    margin-top: 20px;
+}
+
 
