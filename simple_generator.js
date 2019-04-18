@@ -372,7 +372,7 @@ function validate_lat_long(input) {
         return { error: error_msg };
     }
 
-    const parts = input.split(/,| /)
+    const parts = input.replace(/ /g, '').split(/,/)
     if (parts.length !== 2) {
         return { error: error_msg };
     }
