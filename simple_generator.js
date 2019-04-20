@@ -16,6 +16,13 @@ function add_altitude(lat_long_point, altitude) {
 	}
 }
 
+function deleteAllRotors() {
+	document.querySelectorAll(".rotor").forEach(rotorDiv =>
+		rotorDiv.parentNode.removeChild(rotorDiv)
+    )
+}
+
+
 function deleteRotor(event) {
 	const number_rotors = document.getElementsByClassName("rotor").length;
 	if (number_rotors > 1) {
@@ -469,15 +476,17 @@ function generate_waypoints() {
 }
 
 function download_kml() {
-    const waypoints = generate_waypoints();
-    const kml = kml_template(waypoints);
-    download('path_' + waypoints.length + ".kml", kml);
+    save_settings_to_url()
+    const waypoints = generate_waypoints()
+    const kml = kml_template(waypoints)
+    download('path_' + waypoints.length + ".kml", kml)
 }
 
 function download_csv() {
-    const waypoints = generate_waypoints();
-    const csv= csv_template(waypoints);
-    download('path_' + waypoints.length + ".csv", csv);
+    save_settings_to_url()
+    const waypoints = generate_waypoints()
+    const csv = csv_template(waypoints)
+    download('path_' + waypoints.length + ".csv", csv)
 }
 
 function on_circles_change() {
@@ -509,6 +518,7 @@ function draw_state_at_point(circles, pen_radius, circle_settings) {
 }
 
 function drawCompletely() {
+    save_settings_to_url()
     clear_canvas("canvas-refreshing")
     clear_canvas("canvas-static")
 
@@ -531,6 +541,7 @@ function drawCompletely() {
 
 
 function startAnimation() {
+    save_settings_to_url()
     clear_canvas("canvas-refreshing")
     clear_canvas("canvas-static")
 
@@ -556,6 +567,63 @@ function download(filename, text) {
   document.body.removeChild(element);
 }
 
+function load_settings_from_url() {
+    const settings_str = window.location.hash.substring(1);
+
+    const settings = { rotor: [] }
+    settings_str.split('&')
+        .map(param => param.split('=').map(decodeURIComponent))
+        .forEach(([name, value]) => {
+            if (name === 'rotor') {
+                settings.rotor.push(value.split(",")) // encoded as radius,inner
+            } else {
+                settings[name] = value; 
+            }
+        })
+   
+    if (settings.rotor.length > 0) {
+        deleteAllRotors()
+        settings.rotor.forEach(([radius, inner]) => add_rotor_node(parseFloat(radius), inner === 'true'))
+    }
+    if (settings.stator) document.getElementById("stator-radius").value = settings.stator
+    if (settings.pen) document.getElementById("pen-radius").value = settings.pen
+    if (settings.points) document.getElementById("sample-points").value = settings.points
+    if (settings.start) document.getElementById("start-segment").value = settings.start
+    if (settings.end) document.getElementById("end-segment").value = settings.end
+    if (settings.speed) document.getElementById("draw-speed").value = settings.speed
+    if (settings.center) document.getElementById("center-lat-long").value = settings.center
+    if (settings.scale) document.getElementById("scale-radius").value = settings.scale
+    if (settings.altitude) document.getElementById("altitude").value = settings.altitude
+}
+
+function save_settings_to_url() {
+    const setting_pairs = [];
+    const settings = get_draw_inputs()
+
+    settings.circles.forEach((circle, index) => {
+        if (index == 0) {
+            setting_pairs.push(['stator', circle.radius])
+        } else {
+            setting_pairs.push(['rotor', circle.radius + ',' + circle.inner])
+        }
+    })
+    setting_pairs.push(['pen', settings.pen_radius])
+    setting_pairs.push(['points', settings.num_sample_points])
+    setting_pairs.push(['start', settings.start_segment_degrees])
+    setting_pairs.push(['end', settings.end_segment_degrees])
+    setting_pairs.push(['speed', settings.seconds_main_revolution])
+    
+    setting_pairs.push(['center', document.getElementById("center-lat-long").value])
+    setting_pairs.push(['scale', document.getElementById("scale-radius").value])
+    setting_pairs.push(['altitude', document.getElementById("altitude").value])
+
+    const settings_str = setting_pairs
+        .map(pair => pair.map(encodeURIComponent).join("="))
+        .join("&")
+
+    window.location.hash = "#" + settings_str
+}
+
 // on load code  ////////////////////////////////////////////////
 window.onload = function () {
 	
@@ -570,5 +638,8 @@ window.onload = function () {
 
 	document.getElementById("make-kml").onclick=download_kml;
 	document.getElementById("make-csv").onclick=download_csv;
+
+    load_settings_from_url();
+
 }
 
