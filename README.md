@@ -1,8 +1,12 @@
+
+
+[Dronograph](https://parkertimmins.github.io/dronograph/index.html) is a tool that makes [Spirograph](https://en.wikipedia.org/wiki/Spirograph) designs which can be exported as a path for a drone to fly. The idea is for a drone to fly the path of the design with a light, probably at night. The design can then be captured using an long exposure image.
+
 #### Design Controls
 
 * Stator radius - The stator is the main circle that doesn't move. You can change its radius, but this will only be necessary to make sure the design as a whole fits within the display. Value should be between 1 and about 300.
 
-* Rotors - The rotors are the moving circles that roll in or around the stator or the previous rotors. There must be at least one rotor. To delete a rotor click the red 'x' to the left of the h/e radio option. To add a new rotor, click 'Add Rotor' button. Each rotor has a radius, this can be smaller or larger than the previous rotor's radius. When a new rotor is added it's radius it set to half of the preceding
+* Rotors - The rotors are the moving circles that roll in or around the stator or the previous rotor. There must be at least one rotor. To delete a rotor click the red 'x' to the left of the h/e radio option. To add a new rotor, click 'Add Rotor' button. Each rotor has a radius, this can be smaller or larger than the previous rotor's radius. When a new rotor is added it's radius it set to half of the preceding
  circle's radius, but this can be changed. Rotors that roll on the inside of the preceding circle are called Hypotrochoid, and those that roll on the outside are Epitrochoids - click the h or e to toggle b
 etween these options.
 
