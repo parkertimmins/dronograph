@@ -1,5 +1,42 @@
 body {
-    background: #607d8b;
+    background: silver; 
+    margin: 0;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen-Sans","Ubuntu","Cantarell","Helvetica Neue",sans-serif;
+}
+
+.content-box {
+	background: darkgrey;
+    padding: 10px;
+    border-radius: 5px;
+    border: solid 1px #0f144f;
+}
+
+.footer {
+	margin-top: 15px;
+	text-align: center;
+}
+
+.footer > a {
+	padding: 10px;
+    color: #0f144f;
+}
+
+.center-column {
+	display: flex;
+	justify-content: center;
+}
+
+nav {
+    text-align: center;
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #306363;
+	color: #cdcdcd;
+	background: #0f144f;
+	font-size: 1.25rem;
+    margin-bottom: 10px;
 }
 
 #canvas-wrapper {
@@ -9,8 +46,6 @@ body {
     display: inline-block;
     border-radius: 10px;
     background: white;
-    
-    border: 5px solid darkgrey;
 }
 
 #canvas-static {
@@ -23,9 +58,6 @@ body {
     border-radius: 10px;
 }
 
-#radius-input {
-}
-
 #spiro-control {
     width: 200px;
     display: inline-block;
@@ -35,12 +67,6 @@ body {
 
 #center-lat-long {
     width: 12em;
-}
-
-
-
-
-#start-animation {
 }
 
 #stator-radius {

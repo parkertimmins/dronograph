@@ -6,71 +6,79 @@
           
     </head>
     <body>
+        <nav>Dronograph</nav>
 
-        <div id="spiro-control">
-            <div>
-                <label for="stator-radius">Stator radius</label>
-                <input id="stator-radius" type="number" value="200" min="0"/>
-            </div>
+        <div class="center-column"> 
+            <div class="content-box">
+                <div id="spiro-control">
+                    <div>
+                        <label for="stator-radius">Stator radius</label>
+                        <input id="stator-radius" type="number" value="200" min="0"/>
+                    </div>
 
-            <div id="rotors-div">
-                <div id="rotors">
-                    <label for="radius-input">Rotors</label>
-                    <!-- Rotors added in javascript --> 
+                    <div id="rotors-div">
+                        <div id="rotors">
+                            <label for="radius-input">Rotors</label>
+                            <!-- Rotors added in javascript --> 
+                        </div>
+                        <button id="add-rotor">Add rotor</button>
+                    </div> 
+
+                    <label for="pen-radius">Pen radius</label>
+                    <input id="pen-radius" type="number" placeholder="pen radius" value="38"/>
+                    
+                    <label for="sample-radius" title="number of points to output. FlyLitchi can handle a maximum of 99 per mission">
+                        # Sample Points
+                        <input id="sample-points" type="number" placeholder="# sample points" value="300"/>
+                    </label>     
+
+                    <label for="start-segment" title="Start of segment to draw and output">
+                        Start segment degrees
+                        <input id="start-segment" type="number" value="0"/>
+                    </label>
+
+                    <label for="end-segment" title="End of segment to draw and output. Default to 2 full rotations of the main rotor">
+                        End segment degrees
+                        <input id="end-segment" type="number" value="720"/>
+                    </label>
+                    
+                    <select id="draw-speed" title="Animation speed, one loop of main rotor in 10, 5 or 1 second">
+                      <option value="10">Slow</option>
+                      <option value="5" selected>Medium</option>
+                      <option value="1">Fast</option>
+                    </select> 
+
+                    <button id="start-animation">Animate</button>
+                    <button id="draw-completely">Show</button>
+               
+                    <div id="output-container"> 
+                        <label for="center-lat-long" title="Comma separated latitude and longitude of center in decimal notation">Lat, Long</label>
+                        <input id="center-lat-long" value="30.506010,-98.818144"/>
+                         
+                        <label for="scale-radius" title="Distance in real world from the center to the point where the pen starts">
+                            Real scale of radius (meters)
+                            <input id="scale-radius" type="number" value='50'/>
+                        </label>
+                        
+                        <label for="altitude" title="Actual altitude is controlled by 'default altitude' in Autopilot">Altitude* (meters)
+                            <input id="altitude" type="number" value='50'/>
+                        </label>
+                        <button id="make-kml" title="Generates kml in relatvieToGround altitude mode">KML</button>
+                        <button id="make-csv" title="Generates csv. Recommended for FlyLitchi as csv altitude mode is relative to start point">CSV</button>
+                    </div>
                 </div>
-                <button id="add-rotor">Add rotor</button>
-            </div> 
 
-            <label for="pen-radius">Pen radius</label>
-            <input id="pen-radius" type="number" placeholder="pen radius" value="38"/>
+                <div id="canvas-wrapper">
+                    <canvas id="canvas-static" height="800" width="800"></canvas>
+                    <canvas id="canvas-refreshing" height="800" width="800"></canvas>
+                </div>
             
-            <label for="sample-radius" title="number of points to output. FlyLitchi can handle a maximum of 99 per mission">
-                # Sample Points
-                <input id="sample-points" type="number" placeholder="# sample points" value="300"/>
-            </label>     
-
-            <label for="start-segment" title="Start of segment to draw and output">
-                Start segment degrees
-                <input id="start-segment" type="number" value="0"/>
-            </label>
-
-            <label for="end-segment" title="End of segment to draw and output. Default to 2 full rotations of the main rotor">
-                End segment degrees
-                <input id="end-segment" type="number" value="720"/>
-            </label>
-            
-			<select id="draw-speed" title="Animation speed, one loop of main rotor in 10, 5 or 1 second">
-			  <option value="10">Slow</option>
-			  <option value="5" selected>Medium</option>
-			  <option value="1">Fast</option>
-			</select> 
-
-            <button id="start-animation">Animate</button>
-            <button id="draw-completely">Show</button>
-       
-            <div id="output-container"> 
-                <label for="center-lat-long" title="Comma separated latitude and longitude of center in decimal notation">Lat, Long</label>
-                <input id="center-lat-long" value="30.506010,-98.818144"/>
-                 
-                <label for="scale-radius" title="Distance in real world from the center to the point where the pen starts">
-                    Real scale of radius (meters)
-                    <input id="scale-radius" type="number" value='50'/>
-                </label>
-                
-                <label for="altitude" title="Actual altitude is controlled by 'default altitude' in Autopilot">Altitude* (meters)
-                    <input id="altitude" type="number" value='50'/>
-                </label>
-                <button id="make-kml" title="Generates kml in relatvieToGround altitude mode">KML</button>
-                <button id="make-csv" title="Generates csv. Recommended for FlyLitchi as csv altitude mode is relative to start point">CSV</button>
             </div>
         </div>
-
-        <div id="canvas-wrapper">
-            <canvas id="canvas-static" height="800" width="800"></canvas>
-            <canvas id="canvas-refreshing" height="800" width="800"></canvas>
+          
+        <div class="footer">
+            <a href="https://github.com/parkertimmins/dronograph" target="_blank">code & docs</a>
         </div>
-        
-
 
         <script src="simple_generator.js"></script>
     </body>
