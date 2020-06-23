@@ -4,12 +4,13 @@
 
 Concept by [Jeremy Guillory](https://www.instagram.com/jeremy.b.guillory/), coding by Parker Timmins. Look and UI of tool heavily inspired by [SpirographN](http://seedcode.com/SpirographN/sgn.html").
 
-### Quick Tour
-* Click 'Animate', and wait for animation to finish
-* Click 'KML' and to generate and download kml
-* Open kml file in Google Earth to inspect path on Earth's surface
-    * It's easier if you install [Google Earth Pro](https://www.google.com/earth/versions/#download-pro) locally, but Google Earth Web also supports uploading KML files
-* Add/Remove rotors with different radii and repeat Animation and KML download
+### Quick Start
+* Click 'Animate' and wait for animation to finish
+* Click 'KML' to generate and download kml
+* Open kml file in [Google Earth](https://earth.google.com/web/) to inspect path on Earth's surface
+    * To upload file: open Menu bar, select "Projects", select "New Project", select "Import KML file from computer", pick downloaded kml file
+    * Path will show up on the Earth's surface. By default it will be placed on top of [Enchanted Rock](https://en.wikipedia.org/wiki/Enchanted_Rock)
+* Add/Remove rotors with different radii and repeat previous steps to see a different in Google Earth
 
 
 ### Controls
