@@ -2,7 +2,7 @@
 
 [Dronograph](https://parkertimmins.github.io/dronograph/index.html) is a tool that makes [Spirograph](https://en.wikipedia.org/wiki/Spirograph) designs which can be exported as a path for a drone to fly. The idea is for a drone to fly the path of the design with a light, probably at night. The design can then be captured using an long exposure image.
 
-Concept by [Jeremy Guillory](https://www.instagram.com/jeremy.b.guillory/), coding by Parker Timmins. Look and UI of tool heavily inspired by [SpirographN](http://seedcode.com/SpirographN/sgn.html").
+Concept by [Jeremy Guillory](https://www.instagram.com/jeremy.b.guillory/), coding by Parker Timmins. Spirograph editor is based on [SpirographN](http://seedcode.com/SpirographN/sgn.html"), though none of the implementation is shared.
 
 ### Quick Start
 * Click 'Animate' and wait for animation to finish
